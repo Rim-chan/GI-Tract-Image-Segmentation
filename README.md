@@ -1,4 +1,1 @@
-   Hello Rim!!!!!!
-   Hello imaginary friend :)
-   I don't exist! 
-   obviously!!
+We are trying to figure this thing out. Stay tuned.
