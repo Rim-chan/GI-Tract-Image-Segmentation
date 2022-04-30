@@ -1,6 +1,8 @@
 import torch
+import math
+from scipy.spatial.distance import directed_hausdorff
 from torchmetrics import Metric
-
+                
 
 class UWGITractMetrics(Metric):
     def __init__(self, n_class):
@@ -8,17 +10,19 @@ class UWGITractMetrics(Metric):
         self.n_class = n_class
         self.add_state("steps", default=torch.zeros(1), dist_reduce_fx="sum")
         self.add_state("dice", default=torch.zeros(n_class), dist_reduce_fx="sum")
+        self.add_state("hausdorff", default=torch.zeros(n_class), dist_reduce_fx="sum")
         self.add_state("loss", default=torch.zeros(1), dist_reduce_fx="sum")
         
     def update(self, p, y, loss):
         self.steps += 1
-        self.dice += self.compute_stats_uwgitract(p, y)
+        self.dice += self.compute_dice(p, y)
+        self.hausdorff += self.compute_hausdorff(p, y) 
         self.loss += loss
         
     def compute(self):
-        return 100 * self.dice / self.steps, self.loss / self.steps
+        return 100 * self.dice / self.steps, self.hausdorff / self.steps, self.loss / self.steps
     
-    def compute_stats_uwgitract(self, p, y):
+    def compute_dice(self, p, y):
         scores = torch.zeros(self.n_class, device=p.device, dtype=torch.float32)
         p = (torch.sigmoid(p) > 0.5).int()
         
@@ -32,6 +36,18 @@ class UWGITractMetrics(Metric):
             score_cls = (2 * tp).to(torch.float) / denom if torch.is_nonzero(denom) else 0
             scores[i - 1] = score_cls
         return scores
+
+    def compute_hausdorff(self, p, y):
+        scores = torch.zeros(self.n_class, device=p.device, dtype=torch.float32)
+        p = (torch.sigmoid(p) > 0.5).int()
+        
+        for i in range(self.n_class):
+            p_i, y_i = p[:, i], y[:, i]
+            p_i /= math.sqrt(p_i.shape[-1])
+            y_i /= math.sqrt(y_i.shape[-1])
+            scores[i - 1] = max(directed_hausdorff(p_i, y_i)[0], directed_hausdorff(y_i, p_i)[0])
+        return scores
+
     
     @staticmethod
     def get_stats(p, y, class_idx):

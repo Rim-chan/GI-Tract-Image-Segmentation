@@ -66,22 +66,17 @@ class UWGITractDataset(Dataset):
 
 
 class UWGITractDataModule(LightningDataModule):
-    def __init__(self, base_dir, csv_path, crop_size, batch_size=12):
-        self.batch_size = batch_size
-        self.base_dir = base_dir
-        self.csv_path = csv_path
-        self.crop_size = crop_size
+    def __init__(self, args):
+        self.args = args
     
     def setup(self, stage=None):
-        uwgitract_dataset = UWGITractDataset(self.base_dir, self.csv_path, self.crop_size)
+        uwgitract_dataset = UWGITractDataset(self.args.base_dir, self.args.csv_path, self.args.crop_size)
         self.uwgitract_train, self.uwgitract_val = random_split(uwgitract_dataset,
                                                             [math.ceil(0.85*len(uwgitract_dataset)),
                                                              math.floor(0.15*len(uwgitract_dataset))]) # ADD SEED LATER
 
     def train_dataloader(self):
-        return DataLoader(self.uwgitract_train, batch_size=self.batch_size, num_workers=2, drop_last=True)
+        return DataLoader(self.uwgitract_train, batch_size=self.args.batch_size, num_workers=self.args.num_workers, drop_last=True)
 
     def val_dataloader(self):
-        return DataLoader(self.uwgitract_val, batch_size=self.batch_size, num_workers=2, drop_last=False)
-
-
+        return DataLoader(self.uwgitract_val, batch_size=self.args.batch_size, num_workers=self.args.num_workers, drop_last=False)
