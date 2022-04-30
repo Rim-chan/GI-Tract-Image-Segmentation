@@ -14,7 +14,7 @@ if __name__ == "__main__":
     model_ckpt = ModelCheckpoint(dirpath="./", filename="best_model",
                                 monitor="dice_mean", mode="max", save_last=True)
     callbacks.append(model_ckpt)
-    trainer = Trainer(callbacks=callbacks, enable_checkpointing=True, max_epochs=1, 
+    trainer = Trainer(callbacks=callbacks, enable_checkpointing=True, max_epochs=args.num_epochs, 
                     enable_progress_bar=True, gpus=1, accelerator="gpu")
 
 

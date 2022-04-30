@@ -17,5 +17,6 @@ def get_main_args():
     arg("--weight_decay", type=float, default=1e-5, help="Weight Decay")
     arg("--kernels", type=list, default=[[3, 3]] * 5, help="Convolution Kernels")
     arg("--strides", type=list, default=[[1, 1]] +  [[2, 2]] * 4, help="Convolution Strides")
+    arg("--num_epochs", type=int, default=1, help="Number of Epochs")
 
     return parser.parse_args()
