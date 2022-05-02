@@ -14,32 +14,38 @@ class UWGITractDataset(Dataset):
         self.scans = sorted(glob.glob(base_dir + '\\**\\*.png', recursive=True))
         self.train_csv = pd.read_csv(csv_path)
         self.crop_size = crop_size
-        
+        self.no_nans = self.drop_nans(self.train_csv)
+
+    def drop_nans(self, df):
+        df['segmentation'] = df.segmentation.fillna('')
+        df['length'] = df.segmentation.map(len)
+        df2 = df.groupby('id')['segmentation'].agg(list).to_frame().reset_index()
+        df2 = df2.merge(df.groupby('id')['length'].agg(sum).to_frame().reset_index())
+        df2.drop(df2[df2.length ==0].index, inplace=True) #16590 
+        return df2  
+    
     def retrieve_masks(self, idx):
         bits = self.scans[idx].split('\\')
         mask_id = '_'.join([bits[-3]] + bits[-1].split('_')[:2])
         
-        masks_df = self.train_csv.loc[self.train_csv['id'] == mask_id]
-        stomach_row = masks_df.loc[masks_df['class'] == 'stomach']
-        small_bowel_row = masks_df.loc[masks_df['class'] == 'small_bowel']
-        large_bowel_row = masks_df.loc[masks_df['class'] == 'large_bowel']
+        masks_row = self.no_nans.loc[self.no_nans['id'] == mask_id]['segmentation'].item()
+        large_bowel_str, small_bowel_str, stomach_str = masks_row
         
-        return stomach_row, small_bowel_row, large_bowel_row
+        return large_bowel_str, small_bowel_str, stomach_str 
     
     def combine_files(self, idx):
-        stomach_row, small_bowel_row, large_bowel_row = self.retrieve_masks(idx)
+        large_bowel_str, small_bowel_str, stomach_str = self.retrieve_masks(idx)
         files = {'scan':self.scans[idx],
-                 'stomach' : stomach_row,
-                 'small_bowel': small_bowel_row,
-                 'large_bowel': large_bowel_row}
+                 'stomach' : stomach_str,
+                 'small_bowel': small_bowel_str,
+                 'large_bowel': large_bowel_str}
         return files    
     
-    def rl_decoder(self, shape, row):
+    def rl_decoder(self, shape, rl):
         H, W = shape
         mask = np.zeros((H * W))
-        rl = row['segmentation'].values.item()
         
-        if not isinstance(rl, str):
+        if rl == '':
             return mask.reshape(H,W)
         else:
             rl = rl.split(' ')
@@ -53,6 +59,7 @@ class UWGITractDataset(Dataset):
     def __getitem__(self, idx):
         file = self.combine_files(idx)
         scan = io.imread(file['scan']).astype(np.int16)
+        scan = scan/ np.iinfo(scan.dtype).max
         mask_stomach = self.rl_decoder(scan.shape, file['stomach'])
         mask_small_bowel = self.rl_decoder(scan.shape, file['small_bowel'])
         mask_large_bowel = self.rl_decoder(scan.shape, file['large_bowel'])
@@ -67,6 +74,7 @@ class UWGITractDataset(Dataset):
 
 class UWGITractDataModule(LightningDataModule):
     def __init__(self, args):
+        super().__init__()
         self.args = args
     
     def setup(self, stage=None):
