@@ -16,7 +16,7 @@ class UWGITractMetrics(Metric):
     def update(self, p, y, loss):
         self.steps += 1
         self.dice += self.compute_dice(p, y)
-        self.hausdorff += self.compute_hausdorff(p, y) 
+        #self.hausdorff += self.compute_hausdorff(p, y) 
         self.loss += loss
         
     def compute(self):

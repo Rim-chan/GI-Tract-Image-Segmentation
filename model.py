@@ -1,4 +1,5 @@
 import torch
+import gc
 from losses import LossUWGITract
 from metrics import UWGITractMetrics
 import pytorch_lightning as pl
@@ -27,14 +28,20 @@ class Unet(pl.LightningModule):
         loss = self.loss(logits, lbl)
         self.metrics.update(logits, lbl, loss) 
         
+    def training_epoch_end(self, outputs):
+        torch.cuda.empty_cache()
+        gc.collect()
+        
     def validation_epoch_end(self, outputs):
         dice, hausdorff, loss = self.metrics.compute()
-        dice_mean = dice.item()
-        hausdorff_mean = hausdorff.item()
+        dice_mean = dice.mean().item()
+        hausdorff_mean = hausdorff.mean().item()
         self.metrics.reset()
         print(f"Val_Performace: Mean_Dice {dice_mean}, Mean_Hausdorff {hausdorff_mean}, Val_Loss {loss.item()}")
         self.log("dice_mean", dice_mean)
         self.log("hausdorff_mean", hausdorff_mean)
+        torch.cuda.empty_cache()
+        gc.collect()
         
     def build_model(self):
         self.model = DynUNet(
@@ -44,9 +51,11 @@ class Unet(pl.LightningModule):
             kernel_size=self.args.kernels,
             strides=self.args.strides,
             upsample_kernel_size=self.args.strides[1:],
+            filters=[64, 128, 256, 512],   #change1
             norm_name=("INSTANCE", {"affine": True}),
             act_name=("leakyrelu", {"inplace": True, "negative_slope": 0.01})
         )
+        
         
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.args.learning_rate, weight_decay=self.args.weight_decay)

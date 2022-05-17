@@ -13,7 +13,7 @@ class LossUWGITract(nn.Module):
         return self.dice(p, y) + self.ce(p, y)
     
     def forward(self, p, y):
-        p_st, p_sb, p_lb = p[:, 0], p[:, 1], p[:, 2]
-        y_st, y_sb, y_lb = y[:, 0], y[:, 1], y[:, 2]
+        p_st, p_sb, p_lb = p[:, 0].unsqueeze(1), p[:, 1].unsqueeze(1), p[:, 2].unsqueeze(1)
+        y_st, y_sb, y_lb = y[:, 0].unsqueeze(1), y[:, 1].unsqueeze(1), y[:, 2].unsqueeze(1)
         l_st, l_sb, l_lb = self._loss(p_st, y_st), self._loss(p_sb, y_sb), self._loss(p_lb, y_lb)
         return l_st + l_sb + l_lb

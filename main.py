@@ -1,4 +1,3 @@
-from cv2 import KAZE_DIFF_CHARBONNIER
 from dataloader import *
 from args import *
 from model import *
@@ -16,12 +15,18 @@ if __name__ == "__main__":
                                 monitor="dice_mean", mode="max", save_last=True)
     callbacks.append(model_ckpt)
     trainer = Trainer(callbacks=callbacks, enable_checkpointing=True, max_epochs=args.num_epochs, 
-                    enable_progress_bar=True, gpus=1, accelerator="gpu")
+                enable_progress_bar=True, gpus=1, accelerator="gpu", amp_backend='apex', profiler='simple')
 
-
-   # train the model
+    # train the model
     trainer.fit(model, dm)
     # dataset = UWGITractDataset(args.base_dir, args.csv_path, args.crop_size)
-    # img, lbl = dataset[4000]
+    # dm = UWGITractDataModule(args)
+    # dm.setup()
+    # img, lbl = next(iter(dm.train_dataloader()))
+    # img, lbl = dataset[0]
+
+
     # print(img.shape, lbl.shape)
-    
+
+
+    # print(len(dm.train_dataloader()))
