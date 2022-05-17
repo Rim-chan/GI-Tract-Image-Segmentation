@@ -51,7 +51,6 @@ class Unet(pl.LightningModule):
             kernel_size=self.args.kernels,
             strides=self.args.strides,
             upsample_kernel_size=self.args.strides[1:],
-            filters=[64, 128, 256, 512],   #change1
             norm_name=("INSTANCE", {"affine": True}),
             act_name=("leakyrelu", {"inplace": True, "negative_slope": 0.01})
         )
