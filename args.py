@@ -1,5 +1,5 @@
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
-
+import torch
 
 
 def get_main_args():
@@ -12,6 +12,7 @@ def get_main_args():
     arg("--in_channels", type=int, default=1, help="Network Input Channels")
     arg("--out_channels", type=int, default=3, help="Network Output Channels")
     arg("--seed", type=int, default=26012022, help="Random Seed")
+    arg("--generator", default=torch.Generator().manual_seed(26012022), help='Train Validate Predict Seed')
     arg("--num_workers", type=int, default=2, help="Number of DataLoader Workers")
     arg("--learning_rate", type=float, default=2e-3, help="Learning Rate")
     arg("--weight_decay", type=float, default=1e-5, help="Weight Decay")
