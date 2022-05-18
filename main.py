@@ -1,3 +1,4 @@
+from telnetlib import DONT
 from dataloader import *
 from args import *
 from model import *
@@ -18,7 +19,13 @@ if __name__ == "__main__":
                 enable_progress_bar=True, gpus=1, accelerator="gpu", amp_backend='apex', profiler='simple')
 
     # train the model
-    trainer.fit(model, dm)
+    if args.exec_mode == 'Train':
+        trainer.fit(model, dm)
+    else:
+        trainer.predict(datamodule=dm, ckpt_path=args.ckpt_path)  
+
+
+        
     # dataset = UWGITractDataset(args.base_dir, args.csv_path, args.crop_size)
     # dm = UWGITractDataModule(args)
     # dm.setup()

@@ -1,4 +1,6 @@
 import torch
+import torch.nn as nn
+import numpy as np
 import gc
 from losses import LossUWGITract
 from metrics import UWGITractMetrics
@@ -12,9 +14,6 @@ class Unet(pl.LightningModule):
         self.build_model()
         self.loss = LossUWGITract()
         self.metrics = UWGITractMetrics(n_class=self.args.out_channels) 
-        
-    def forward(self, img):
-        return torch.argmax(self.model(img, dim=1))
     
     def training_step(self, batch, batch_idx):
         img, lbl = batch
@@ -26,7 +25,14 @@ class Unet(pl.LightningModule):
         img, lbl = batch
         logits = self.model(img)
         loss = self.loss(logits, lbl)
-        self.metrics.update(logits, lbl, loss) 
+        self.metrics.update(logits, lbl, loss)
+        
+    def predict_step(self, batch, batch_idx):
+        img, _ = batch
+        preds = self.model(img)
+        preds = (nn.Sigmoid()(preds) > 0.5).int()
+        preds_np = preds.detach().cpu().numpy()
+        np.save(self.args.preds_path, preds_np)
         
     def training_epoch_end(self, outputs):
         torch.cuda.empty_cache()
@@ -42,7 +48,7 @@ class Unet(pl.LightningModule):
         self.log("hausdorff_mean", hausdorff_mean)
         torch.cuda.empty_cache()
         gc.collect()
-        
+
     def build_model(self):
         self.model = DynUNet(
             spatial_dims=2,
@@ -54,7 +60,6 @@ class Unet(pl.LightningModule):
             norm_name=("INSTANCE", {"affine": True}),
             act_name=("leakyrelu", {"inplace": True, "negative_slope": 0.01})
         )
-        
         
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.args.learning_rate, weight_decay=self.args.weight_decay)

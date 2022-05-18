@@ -82,10 +82,14 @@ class UWGITractDataModule(LightningDataModule):
     
     def setup(self, stage=None):
         uwgitract_dataset = UWGITractDataset(self.args.base_dir, self.args.csv_path, self.args.crop_size)
-        self.uwgitract_train, self.uwgitract_val = random_split(uwgitract_dataset,
+        self.uwgitract_train, self.remainings = random_split(uwgitract_dataset,
                                                             [math.ceil(0.85*len(uwgitract_dataset)),
                                                              math.floor(0.15*len(uwgitract_dataset))]) # ADD SEED LATER
-
+        
+       
+        self.uwgitract_val, self.uwgitract_test = random_split(self.remainings,
+                                                            [math.floor(0.99*len(self.remainings)),
+                                                             math.ceil(0.01*len(self.remainings))]) # ADD SEED LATER
 
     def train_dataloader(self):
         return DataLoader(self.uwgitract_train, batch_size=self.args.batch_size, 
@@ -93,4 +97,8 @@ class UWGITractDataModule(LightningDataModule):
 
     def val_dataloader(self):
         return DataLoader(self.uwgitract_val, batch_size=self.args.batch_size, 
+                          num_workers=self.args.num_workers, drop_last=False)
+    
+    def predict_dataloader(self):
+        return DataLoader(self.uwgitract_test, batch_size=self.args.batch_size, 
                           num_workers=self.args.num_workers, drop_last=False)

@@ -18,5 +18,8 @@ def get_main_args():
     arg("--kernels", type=list, default=[[3, 3]] * 4, help="Convolution Kernels")
     arg("--strides", type=list, default=[[1, 1]] +  [[2, 2]] * 3, help="Convolution Strides")
     arg("--num_epochs", type=int, default=20, help="Number of Epochs")
+    arg("--exec_mode", type=str, default='train', help='Execution Mode')
+    arg("--ckpt_path", type=str, default=None, help='Checkpoint Path')
+    arg("--preds_path", type=str, default=None, help='Predictions Path')
 
     return parser.parse_args()
