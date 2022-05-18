@@ -15,6 +15,9 @@ class Unet(pl.LightningModule):
         self.loss = LossUWGITract()
         self.metrics = UWGITractMetrics(n_class=self.args.out_channels) 
     
+    
+
+
     def training_step(self, batch, batch_idx):
         img, lbl = batch
         logits = self.model(img)

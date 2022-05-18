@@ -19,10 +19,10 @@ if __name__ == "__main__":
                 enable_progress_bar=True, gpus=1, accelerator="gpu", amp_backend='apex', profiler='simple')
 
     # train the model
-    if args.exec_mode == 'Train':
+    if args.exec_mode == 'train':
         trainer.fit(model, dm)
     else:
-        trainer.predict(datamodule=dm, ckpt_path=args.ckpt_path)  
+        trainer.predict(model, datamodule=dm, ckpt_path=args.ckpt_path)  
 
 
         
