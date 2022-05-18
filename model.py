@@ -15,8 +15,6 @@ class Unet(pl.LightningModule):
         self.loss = LossUWGITract()
         self.metrics = UWGITractMetrics(n_class=self.args.out_channels) 
     
-    
-
 
     def training_step(self, batch, batch_idx):
         img, lbl = batch
@@ -31,11 +29,14 @@ class Unet(pl.LightningModule):
         self.metrics.update(logits, lbl, loss)
         
     def predict_step(self, batch, batch_idx):
-        img, _ = batch
+        img, lbl = batch
         preds = self.model(img)
         preds = (nn.Sigmoid()(preds) > 0.5).int()
+        lbl_np = lbl.detach().cpu().numpy()
         preds_np = preds.detach().cpu().numpy()
-        np.save(self.args.preds_path, preds_np)
+        np.save(self.args.save_path + 'predictions.npy', preds_np)
+        np.save(self.args.save_path + 'labels.npy', lbl_np)
+
         
     def training_epoch_end(self, outputs):
         torch.cuda.empty_cache()

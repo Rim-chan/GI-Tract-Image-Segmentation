@@ -20,6 +20,6 @@ def get_main_args():
     arg("--num_epochs", type=int, default=20, help="Number of Epochs")
     arg("--exec_mode", type=str, default='train', help='Execution Mode')
     arg("--ckpt_path", type=str, default=None, help='Checkpoint Path')
-    arg("--preds_path", type=str, default=None, help='Predictions Path')
+    arg("--save_path", type=str, default='./', help='Saves Path')
 
     return parser.parse_args()
