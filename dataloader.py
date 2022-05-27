@@ -13,10 +13,10 @@ import cv2
 
 
 class UWGITractDataset(Dataset): 
-    def __init__(self, base_dir, csv_path, crop_size):
+    def __init__(self, base_dir, csv_path, resize_shape):
         self.scans = sorted(glob.glob(base_dir + '/**/*.png', recursive=True))
         self.train_csv = pd.read_csv(csv_path)
-        self.crop_size = crop_size
+        self.resize_shape = resize_shape
         self.no_nans = self.drop_nans(self.train_csv)
         self.files_with_nones = [self.retrieve_masks(idx) for idx in range(len(self.scans))]
         self.files = [i for i in self.files_with_nones if i]
@@ -69,7 +69,7 @@ class UWGITractDataset(Dataset):
         mask_large_bowel = self.rl_decoder(scan.shape, file['large_bowel'])
         
         lbl = np.stack([mask_stomach, mask_small_bowel, mask_large_bowel], axis=2)
-        transforms = A.Compose([A.Resize(224, 224, interpolation=cv2.INTER_NEAREST)], p=1.0)
+        transforms = A.Compose([A.Resize(self.resize_shape, self.resize_shape, interpolation=cv2.INTER_NEAREST)], p=1.0)
         data = transforms(image=scan[..., None], mask=lbl)
         img = torch.tensor(data['image'].transpose((2, 0, 1)), dtype=torch.float32)
         lbl = torch.tensor(data['mask'].transpose((2, 0, 1)), dtype=torch.float32)
@@ -81,7 +81,7 @@ class UWGITractDataModule(LightningDataModule):
         self.args = args
     
     def setup(self, stage=None):
-        uwgitract_dataset = UWGITractDataset(self.args.base_dir, self.args.csv_path, self.args.crop_size)
+        uwgitract_dataset = UWGITractDataset(self.args.base_dir, self.args.csv_path, self.args.resize_shape)
         self.uwgitract_train, self.remainings = random_split(uwgitract_dataset,
                                                             [math.ceil(0.85*len(uwgitract_dataset)),
                                                              math.floor(0.15*len(uwgitract_dataset))],
