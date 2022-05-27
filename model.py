@@ -44,13 +44,16 @@ class Unet(pl.LightningModule):
         gc.collect()
         
     def validation_epoch_end(self, outputs):
-        dice, hausdorff, loss = self.metrics.compute()
+        dice, hausdorff, loss, eval_metric = self.metrics.compute()
         dice_mean = dice.mean().item()
         hausdorff_mean = hausdorff.mean().item()
+        eval_metric_mean = eval_metric.mean().item()
         self.metrics.reset()
-        print(f"Val_Performace: Mean_Dice {dice_mean}, Mean_Hausdorff {hausdorff_mean}, Val_Loss {loss.item()}")
+        print(f"Val_Performace: Mean_Dice {dice_mean}, Mean_Hausdorff {hausdorff_mean}, \
+                Val_Loss {loss.item()}, Evaluation Metric {eval_metric_mean}")
         self.log("dice_mean", dice_mean)
         self.log("hausdorff_mean", hausdorff_mean)
+        self.log("eval_metric_mean", eval_metric_mean)
         torch.cuda.empty_cache()
         gc.collect()
 
