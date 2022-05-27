@@ -49,8 +49,8 @@ class Unet(pl.LightningModule):
         hausdorff_mean = hausdorff.mean().item()
         eval_metric_mean = eval_metric.mean().item()
         self.metrics.reset()
-        print(f"Val_Performace: Mean_Dice {dice_mean}, Mean_Hausdorff {hausdorff_mean}, \
-                Val_Loss {loss.item()}, Evaluation Metric {eval_metric_mean}")
+        print(f"Val_Performace: Mean_Dice {dice_mean:.3f}, Mean_Hausdorff {hausdorff_mean:.3f}, \
+                Val_Loss {loss.item():.3f}, Evaluation Metric {eval_metric_mean:.3f}")
         self.log("dice_mean", dice_mean)
         self.log("hausdorff_mean", hausdorff_mean)
         self.log("eval_metric_mean", eval_metric_mean)
