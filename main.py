@@ -1,4 +1,3 @@
-from telnetlib import DONT
 from dataloader import *
 from args import *
 from model import *

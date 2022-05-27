@@ -13,7 +13,8 @@ class Unet(pl.LightningModule):
         self.args = args
         self.build_model()
         self.loss = LossUWGITract()
-        self.metrics = UWGITractMetrics(n_class=self.args.out_channels) 
+        self.metrics = UWGITractMetrics(n_class=self.args.out_channels, 
+                                        shape = self.args.resize_shape) 
     
 
     def training_step(self, batch, batch_idx):
