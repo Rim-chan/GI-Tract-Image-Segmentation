@@ -1,0 +1,12 @@
+opencv-python
+numpy
+Pillow
+matplotlib
+torch
+scikit-image
+torchvision
+monai
+torchmetrics
+pytorch-lightning 
+pandas
+albumentations
