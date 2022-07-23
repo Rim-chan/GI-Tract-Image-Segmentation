@@ -8,7 +8,7 @@ GI-Tract-Image-Segmentation
 - `Dataset`_
 - `UNet Model`_
 - `Project Structure`_
-- `Instructions for Model Development`_
+- `Instructions to run our code`_
 
 
 Introduction
@@ -141,4 +141,4 @@ Instructions to run our code
 .. figure:: https://github.com/Rim-chan/GI-Tract-Image-Segmentation/blob/main/images/prediction.png
     :align: center
 
-    Figure3: UNet predictions and its corresponding ground truth masks 
+    Figure2: UNet predictions and its corresponding ground truth masks 
