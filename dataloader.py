@@ -1,4 +1,4 @@
-import glob # mandatory for the GF
+import glob 
 import math
 import numpy as np
 import pandas as pd
